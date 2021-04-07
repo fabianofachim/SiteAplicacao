@@ -1,0 +1,151 @@
+﻿@using SiteTeste.Models
+@model ContatoFiltro
+@{
+    ViewData["Title"] = "CRUD";
+}
+<h2>CRUD</h2>
+
+<div id="modalAlerta" class="alert alert-success" role="alert" style="display:none;">
+    <div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#modalAlerta').hide();">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="text-center">
+        <span id="modelMsg"></span>
+    </div>
+</div>
+
+<h3>Lista de Contato</h3>
+@using (Html.BeginForm("Index", "Contato", null, FormMethod.Get))
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">Filtro</div>
+        <div class="panel-body">
+            <form>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="Fnome">Nome</label>
+                        @Html.TextBoxFor(m => m.busca, new { @class = "form-control", type = "text" })
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="Fsexo">Tipo Contato</label>
+                        @Html.DropDownListFor(m => m.TipoContato, new SelectList(ViewBag.TipoContato, "Id", "Nome"), "-- Selecione --", new { @class = "form-control" })
+                    </div>                  
+                    <div class="form-group col-md-2">
+                        <br />
+                        <button type="submit" id="btn-buscar" class="btn btn-primary">Buscar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<table id="table-pessoa" class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Telefone</th>
+            <th scope="col">Email</th>
+            <th scope="col"></th>
+            <th scope="col"><a href="#" onclick="CriarContato()">Novo</a></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            if (ViewBag.Contato != null && ((List<Contato>)ViewBag.Contato).Count > 0)
+            {
+                var list = (List<Contato>)ViewBag.Contato;
+                for (var i = 0; i < list.Count; i++)
+                {
+                    var item = list[i];
+                    <tr>
+                        <td>@item.IdContato</td>
+                        <td>@item.Nome</td>
+                        <td>@item.Telefone</td>
+                        <td>@item.Email</td>                        
+                        <td>
+                            <a style="margin-right:5px;" href="#" onclick="Alterar('@item.IdContato')">Editar</a>
+                            <a href="#" onclick="Excluir('@item.IdContato')">Excluir</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" align="center">Não existem registros</td>
+                </tr>
+            }
+        }
+
+    </tbody>
+</table>
+
+<div id="modalPessoa" class="modal bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="row">
+                    <div class="col-md-11">
+                        <h3 class="modal-title">Cadastro - Contato</h3>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#modalPessoa').hide();">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="modalCadastroAlerta" class="alert alert-success" role="alert" style="display:none;">
+                    <div>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#modalCadastroAlerta').hide();">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <label id="modelCadatroMsg"></label>
+                    </div>
+                </div>
+                <form id="form-cadastro">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label for="Nome">Nome</label>
+                                <input type="text" class="form-control" id="Nome" placeholder="Nome ..." maxlength="150" />
+                                <input type="hidden" id="IdContato" />
+                            </div>
+                            <div class="col-md-4">
+                                <label for="Telefone">Telefone</label>
+                                <input type="text" class="form-control" id="Telefone" placeholder="Telefone ..." maxlength="15" onkeypress="mask(this, mphone);" onblur="mask(this, mphone);" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="Rg">Email</label>
+                                <input type="text" class="form-control" id="Email" placeholder="name@example.com" maxlength="120">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="TipoContato">Tipo Contato</label>                                
+                                @Html.DropDownList("TpContato", new SelectList(ViewBag.TipoContato, "Id", "Nome"), "", new { @class = "form-control" })
+                            </div>                          
+                        </div>
+                    </div>                    
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="botao-salvar" type="button" class="btn btn-primary" onclick="Salvar()">Salvar</button>
+                <button id="botao-fechar" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#modalPessoa').hide();">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+@*<script src="~/js/Util.js"></script>*@
+<script src="~/js/crudContato.js"></script>
